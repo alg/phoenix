@@ -1142,6 +1142,13 @@ export class Socket {
   }
 
   leaveOpenTopic(topic){
+    // Masking the error until it's resolved:
+    // https://github.com/phoenixframework/phoenix/issues/3957
+    if (!this.channels || !this.channels.find) {
+      if (Rollbar && Rollbar.error) Rollbar.error("Socket.channels doesn't have find", {channels: this.channels})
+      return
+    }
+    
     let dupChannel = this.channels.find(c => c.topic === topic && (c.isJoined() || c.isJoining()))
     if(dupChannel){
       if(this.hasLogger()) this.log("transport", `leaving duplicate topic "${topic}"`)
